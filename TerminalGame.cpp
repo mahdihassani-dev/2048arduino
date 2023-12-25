@@ -264,12 +264,14 @@ void play(){
             for (int i = 0; i < 4; ++i)
             {
                 Shift(0, i);
+        
             }
             break;
         case 80:
             for (int i = 0; i < 4; ++i)
             {
                 Shift(2, i);
+                        
             }
             break;
         case 75:

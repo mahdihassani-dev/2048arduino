@@ -1,36 +1,41 @@
 #include <SPI.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_PCD8544.h>
+#include <EEPROM.h>
+
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 9, 10, 8);
+int selection[4];
 int m[4][4];
 
 int rotatetext = 1;
+bool moved = false;
 
-void setup() {
 
-  display.begin();
-
+void initializeMatrix() {
   for (int i; i < 4; i++) {
     for (int j; j < 4; j++) {
       m[i][j] = 0;
     }
   }
 
-  display.setContrast(45);
+  int x1 = random(4);
+  int y1 = random(4);
 
-  display.clearDisplay();
-  display.setTextSize(1);
+  int x2 = random(4);
+  int y2 = random(4);
+
+  while (x1 == x2 && y1 == y2) {
+    int x2 = random(4);
+    int y2 = random(4);
+  }
+
+  m[x1][y1] = 2;
+  m[x2][y2] = 2;
 }
 
-void loop() {
 
-  int x = random(0, 3);
-  int y = random(0, 3);
-
-  m[x][y] = 2;
-
-
+void displayTable() {
   display.setCursor(0, 0);
   display.print(m[0][0]);
 
@@ -91,6 +96,163 @@ void loop() {
 
   display.display();
 
-  delay(2000);
+  delay(500);
   display.clearDisplay();
+}
+
+int ParseTheMatrix(int par, int num)  // Change line and column to a, b, c and d
+{
+  int i = 0;
+  int j = 0;
+  int k1 = 0;
+  int k2 = 0;
+
+  switch (par) {
+    case 0:
+      selection[0] = m[0][num];
+      selection[1] = m[1][num];
+      selection[2] = m[2][num];
+      selection[3] = m[3][num];
+      break;
+    case 1:
+      selection[0] = m[num][3];
+      selection[1] = m[num][2];
+      selection[2] = m[num][1];
+      selection[3] = m[num][0];
+      break;
+    case 2:
+      selection[0] = m[3][num];
+      selection[1] = m[2][num];
+      selection[2] = m[1][num];
+      selection[3] = m[0][num];
+      break;
+    case 3:
+      selection[0] = m[num][0];
+      selection[1] = m[num][1];
+      selection[2] = m[num][2];
+      selection[3] = m[num][3];
+      break;
+  }
+
+  return selection[4];
+}
+
+void PassToMatrix(int par, int num, int a, int b, int c, int d)  // This function save our a, b, c and d at list m.
+{
+  int i, j, k1, k2;
+  k1 = 0;
+  k2 = 0;
+
+  switch (par) {
+    case 0:
+      m[0][num] = a;
+      m[1][num] = b;
+      m[2][num] = c;
+      m[3][num] = d;
+      break;
+    case 1:
+      m[num][3] = a;
+      m[num][2] = b;
+      m[num][1] = c;
+      m[num][0] = d;
+      break;
+    case 2:
+      m[3][num] = a;
+      m[2][num] = b;
+      m[1][num] = c;
+      m[0][num] = d;
+      break;
+    case 3:
+      m[num][0] = a;
+      m[num][1] = b;
+      m[num][2] = c;
+      m[num][3] = d;
+      break;
+  }
+}
+
+void Sum(int par, int num, int a, int b, int c, int d)  // For sum a, b, c and d.
+{
+  if (a == b && a != 0) {
+    a += b;
+    b = c;
+    c = d;
+    d = 0;
+    moved = true;
+  }
+
+  if (b == c && b != 0) {
+    b += c;
+    c = d;
+    d = 0;
+    moved = true;
+  }
+
+  if (c == d && c != 0) {
+    c += d;
+    d = 0;
+    moved = true;
+  }
+
+  PassToMatrix(par, num, a, b, c, d);
+}
+
+void Shift(int par, int num)  // Shift a, b, c and d.
+{
+  ParseTheMatrix(par, num);
+  int a, b, c, d;
+  a = selection[0];
+  b = selection[1];
+  c = selection[2];
+  d = selection[3];
+
+  for (int i = 0; i < 3; ++i) {
+    if (a == 0) {
+      a = b;
+      b = c;
+      c = d;
+      d = 0;
+      moved = true;
+    }
+
+    if (b == 0) {
+      b = c;
+      c = d;
+      d = 0;
+      moved = true;
+    }
+
+    if (c == 0) {
+      c = d;
+      d = 0;
+      moved = true;
+    }
+  }
+
+  Sum(par, num, a, b, c, d);
+}
+
+void setup() {
+
+
+  size_t const address{ 0 };
+  unsigned int seed{};
+  EEPROM.get(address, seed);
+  randomSeed(seed);
+  EEPROM.put(address, seed + 1);
+
+
+  display.begin();
+
+  initializeMatrix();
+
+  display.setContrast(45);
+
+  display.clearDisplay();
+  display.setTextSize(1);
+}
+
+void loop() {
+
+  displayTable();
 }
