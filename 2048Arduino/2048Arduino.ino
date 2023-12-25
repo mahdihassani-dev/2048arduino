@@ -315,4 +315,5 @@ void setup() {
 void loop() {
 
   displayTable();
+  play();
 }
