@@ -7,9 +7,18 @@
 Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 9, 10, 8);
 int selection[4];
 int m[4][4];
-
 int rotatetext = 1;
 bool moved = false;
+
+//defintions for the direction of movement with jostick
+#define UP 0
+#define DOWN 1
+#define LEFT 2
+#define RIGHT 3
+#define BUTTON 8
+int direction;
+const int xPin = A0;
+const int yPin = A1;
 
 
 void initializeMatrix() {
@@ -34,6 +43,57 @@ void initializeMatrix() {
   m[x2][y2] = 2;
 }
 
+
+//gets direction of movement
+void input() {
+
+  int xValue = analogRead(xPin);
+  int yValue = analogRead(yPin);
+  int mappedX = map(xValue, 0, 1023, -100, 100);
+  int mappedY = map(yValue, 0, 1023, -100, 100);
+
+  if (mappedY > 10) {
+    direction = UP;
+  } else if (mappedY < -10) {
+    direction = DOWN;
+  } else if (mappedX > 10) {
+    direction = RIGHT;
+  } else if (mappedX < -10) {
+    direction = LEFT;
+  }
+}
+
+void play() {
+
+
+  //action to user movement
+  input();
+  switch (direction) {
+    case RIGHT:
+      for (int i = 0; i < 4; ++i) {
+        Shift(0, i);
+      }
+      break;
+    case LEFT:
+      for (int i = 0; i < 4; ++i) {
+        Shift(2, i);
+      }
+      break;
+    case DOWN:
+      for (int i = 0; i < 4; ++i) {
+        Shift(3, i);
+      }
+      break;
+    case UP:
+      for (int i = 0; i < 4; ++i) {
+        Shift(1, i);
+      }
+      break;
+    default:
+      //cout << endl << "null" << endl;  // not arrow
+      break;
+  }
+}
 
 void displayTable() {
   display.setCursor(0, 0);
