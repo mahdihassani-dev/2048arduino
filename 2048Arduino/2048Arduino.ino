@@ -320,11 +320,6 @@ void loop() {
 
   displayTable();
 
-  int buttonState = digitalRead(BUTTON_PIN);
-  if (buttonState == LOW) {
-    m[0][0] = 10;
-  }
 
-
-  // play();
+  play();
 }
