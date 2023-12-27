@@ -3,6 +3,9 @@
 #include <Adafruit_PCD8544.h>
 #include <EEPROM.h>
 
+#define BUTTON_PIN 3
+
+
 
 Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 9, 10, 8);
 int selection[4];
@@ -19,7 +22,6 @@ bool moved = false;
 int direction;
 const int xPin = A0;
 const int yPin = A1;
-
 
 void initializeMatrix() {
   for (int i; i < 4; i++) {
@@ -294,6 +296,7 @@ void Shift(int par, int num)  // Shift a, b, c and d.
 
 void setup() {
 
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   size_t const address{ 0 };
   unsigned int seed{};
@@ -314,6 +317,14 @@ void setup() {
 
 void loop() {
 
+
   displayTable();
-  play();
+
+  int buttonState = digitalRead(BUTTON_PIN);
+  if (buttonState == LOW) {
+    m[0][0] = 10;
+  }
+
+
+  // play();
 }
