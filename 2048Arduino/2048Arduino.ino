@@ -12,6 +12,7 @@ int selection[4];
 int m[4][4];
 int rotatetext = 1;
 bool moved = false;
+bool joystickMove = false;
 
 //defintions for the direction of movement with jostick
 #define UP 0
@@ -45,6 +46,18 @@ void initializeMatrix() {
   m[x2][y2] = 2;
 }
 
+void addRandomNum() {
+
+  int x, y;
+
+  do {
+    x = random(4);
+    y = random(4);
+  } while (m[x][y] != 0);
+
+  m[x][y] = 2;
+}
+
 
 //gets direction of movement
 void input() {
@@ -54,16 +67,28 @@ void input() {
   int mappedX = map(xValue, 0, 1023, -100, 100);
   int mappedY = map(yValue, 0, 1023, -100, 100);
 
-  if (mappedY > 10) {
-    direction = UP;
-  } else if (mappedY < -10) {
-    direction = DOWN;
-  } else if (mappedX > 10) {
-    direction = RIGHT;
-  } else if (mappedX < -10) {
-    direction = LEFT;
-  }
+
+  if (joystickMove == false) {
+    if (mappedY > 10) {
+      direction = UP;
+      joystickMove = true;
+    } else if (mappedY < -10) {
+      direction = DOWN;
+      joystickMove = true;
+    } else if (mappedX > 10) {
+      direction = RIGHT;
+      joystickMove = true;
+    } else if (mappedX < -10) {
+      direction = LEFT;
+      joystickMove = true;
+    } else {
+      direction = 5;
+    }
+  } else if (-10 <= mappedY && mappedY <= 10 && -10 <= mappedX && mappedX <= 10)
+    joystickMove = false;
 }
+
+
 
 void play() {
 
@@ -80,6 +105,7 @@ void play() {
       for (int i = 0; i < 4; ++i) {
         Shift(2, i);
       }
+
       break;
     case DOWN:
       for (int i = 0; i < 4; ++i) {
@@ -95,6 +121,8 @@ void play() {
       //cout << endl << "null" << endl;  // not arrow
       break;
   }
+
+  direction = 5;
 }
 
 void displayTable() {
@@ -157,8 +185,6 @@ void displayTable() {
 
 
   display.display();
-
-  delay(500);
   display.clearDisplay();
 }
 
@@ -270,24 +296,30 @@ void Shift(int par, int num)  // Shift a, b, c and d.
 
   for (int i = 0; i < 3; ++i) {
     if (a == 0) {
-      a = b;
-      b = c;
-      c = d;
-      d = 0;
-      moved = true;
+      if (!(b == 0 && c == 0 && d == 0)) {
+        a = b;
+        b = c;
+        c = d;
+        d = 0;
+        moved = true;
+      }
     }
 
     if (b == 0) {
-      b = c;
-      c = d;
-      d = 0;
-      moved = true;
+      if (!(c == 0 && d == 0)) {
+        b = c;
+        c = d;
+        d = 0;
+        moved = true;
+      }
     }
 
     if (c == 0) {
-      c = d;
-      d = 0;
-      moved = true;
+      if (d != 0) {
+        c = d;
+        d = 0;
+        moved = true;
+      }
     }
   }
 
@@ -319,7 +351,10 @@ void loop() {
 
 
   displayTable();
-
-
   play();
+
+  if (moved) {
+    addRandomNum();
+    moved = false;
+  }
 }
