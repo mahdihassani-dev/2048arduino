@@ -10,6 +10,7 @@
 Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 9, 10, 8);
 int selection[4];
 int m[4][4];
+int mShow[4][4];
 int rotatetext = 1;
 bool moved = false;
 bool joystickMove = false;
@@ -44,6 +45,12 @@ void initializeMatrix() {
 
   m[x1][y1] = 2;
   m[x2][y2] = 2;
+
+  for (int i; i < 4; i++) {
+    for (int j; j < 4; j++) {
+      mShow[i][j] = m[i][j];
+    }
+  }
 }
 
 void addRandomNum() {
@@ -57,7 +64,6 @@ void addRandomNum() {
 
   m[x][y] = 2;
 }
-
 
 //gets direction of movement
 void input() {
@@ -87,8 +93,6 @@ void input() {
   } else if (-10 <= mappedY && mappedY <= 10 && -10 <= mappedX && mappedX <= 10)
     joystickMove = false;
 }
-
-
 
 void play() {
 
@@ -127,59 +131,59 @@ void play() {
 
 void displayTable() {
   display.setCursor(0, 0);
-  display.print(m[0][0]);
+  display.print(mShow[0][0]);
 
   display.setCursor(20, 0);
-  display.print(m[0][1]);
+  display.print(mShow[0][1]);
 
   display.setCursor(40, 0);
-  display.print(m[0][2]);
+  display.print(mShow[0][2]);
 
   display.setCursor(60, 0);
-  display.print(m[0][3]);
+  display.print(mShow[0][3]);
 
   //-----------------------
 
   display.setCursor(0, 10);
-  display.print(m[1][0]);
+  display.print(mShow[1][0]);
 
   display.setCursor(20, 10);
-  display.print(m[1][1]);
+  display.print(mShow[1][1]);
 
   display.setCursor(40, 10);
-  display.print(m[1][2]);
+  display.print(mShow[1][2]);
 
   display.setCursor(60, 10);
-  display.print(m[1][3]);
+  display.print(mShow[1][3]);
 
   //-----------------------
 
 
   display.setCursor(0, 20);
-  display.print(m[2][0]);
+  display.print(mShow[2][0]);
 
   display.setCursor(20, 20);
-  display.print(m[2][1]);
+  display.print(mShow[2][1]);
 
   display.setCursor(40, 20);
-  display.print(m[2][2]);
+  display.print(mShow[2][2]);
 
   display.setCursor(60, 20);
-  display.print(m[2][3]);
+  display.print(mShow[2][3]);
 
   //-----------------------
 
   display.setCursor(0, 30);
-  display.print(m[3][0]);
+  display.print(mShow[3][0]);
 
   display.setCursor(20, 30);
-  display.print(m[3][1]);
+  display.print(mShow[3][1]);
 
   display.setCursor(40, 30);
-  display.print(m[3][2]);
+  display.print(mShow[3][2]);
 
   display.setCursor(60, 30);
-  display.print(m[3][3]);
+  display.print(mShow[3][3]);
 
   //-----------------------
 
@@ -326,6 +330,58 @@ void Shift(int par, int num)  // Shift a, b, c and d.
   Sum(par, num, a, b, c, d);
 }
 
+int getPower(int num) {
+  int counter = 0;
+
+  while (num > 1) {
+    num = num / 2;
+    counter++;
+  }
+
+  return counter;
+}
+
+void convertToPower() {
+
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      mShow[i][j] = getPower(m[i][j]);
+    }
+  }
+}
+
+bool isLoser() {
+
+  // zero exist
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (mShow[i][j] == 0) {
+        return false;
+      }
+    }
+  }
+
+  // can move horizentally
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (mShow[i][j] == mShow[i][j + 1]) {
+        return false;
+      }
+    }
+  }
+
+  // can move vertically
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 3; j++) {
+      if (mShow[j][i] == mShow[j + 1][i]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 void setup() {
 
   pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -349,12 +405,24 @@ void setup() {
 
 void loop() {
 
+  if (isLoser()) {
 
-  displayTable();
-  play();
+    delay(500);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("You Loosed");
+    display.display();
 
-  if (moved) {
-    addRandomNum();
-    moved = false;
+
+  } else {
+    convertToPower();
+    displayTable();
+    play();
+
+
+    if (moved) {
+      addRandomNum();
+      moved = false;
+    }
   }
 }
