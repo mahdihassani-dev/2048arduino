@@ -3,14 +3,14 @@
 #include <Adafruit_PCD8544.h>
 #include <EEPROM.h>
 
-#define BUTTON_PIN 3
+#define BUTTON_PIN 12
 
 
 
-Adafruit_PCD8544 display = Adafruit_PCD8544(13, 11, 9, 10, 8);
+Adafruit_PCD8544 display = Adafruit_PCD8544(4, 5, 6, 10, 11);
 int selection[4];
 int m[4][4];
-int mShow[4][4];
+// int mShow[4][4];
 int rotatetext = 1;
 bool moved = false;
 bool joystickMove = false;
@@ -46,11 +46,11 @@ void initializeMatrix() {
   m[x1][y1] = 2;
   m[x2][y2] = 2;
 
-  for (int i; i < 4; i++) {
-    for (int j; j < 4; j++) {
-      mShow[i][j] = m[i][j];
-    }
-  }
+  // for (int i; i < 4; i++) {
+  //   for (int j; j < 4; j++) {
+  //     mShow[i][j] = m[i][j];
+  //   }
+  // }
 }
 
 void addRandomNum() {
@@ -131,59 +131,59 @@ void play() {
 
 void displayTable() {
   display.setCursor(0, 0);
-  display.print(mShow[0][0]);
+  display.print(m[0][0]);
 
   display.setCursor(20, 0);
-  display.print(mShow[0][1]);
+  display.print(m[0][1]);
 
   display.setCursor(40, 0);
-  display.print(mShow[0][2]);
+  display.print(m[0][2]);
 
   display.setCursor(60, 0);
-  display.print(mShow[0][3]);
+  display.print(m[0][3]);
 
   //-----------------------
 
   display.setCursor(0, 10);
-  display.print(mShow[1][0]);
+  display.print(m[1][0]);
 
   display.setCursor(20, 10);
-  display.print(mShow[1][1]);
+  display.print(m[1][1]);
 
   display.setCursor(40, 10);
-  display.print(mShow[1][2]);
+  display.print(m[1][2]);
 
   display.setCursor(60, 10);
-  display.print(mShow[1][3]);
+  display.print(m[1][3]);
 
   //-----------------------
 
 
   display.setCursor(0, 20);
-  display.print(mShow[2][0]);
+  display.print(m[2][0]);
 
   display.setCursor(20, 20);
-  display.print(mShow[2][1]);
+  display.print(m[2][1]);
 
   display.setCursor(40, 20);
-  display.print(mShow[2][2]);
+  display.print(m[2][2]);
 
   display.setCursor(60, 20);
-  display.print(mShow[2][3]);
+  display.print(m[2][3]);
 
   //-----------------------
 
   display.setCursor(0, 30);
-  display.print(mShow[3][0]);
+  display.print(m[3][0]);
 
   display.setCursor(20, 30);
-  display.print(mShow[3][1]);
+  display.print(m[3][1]);
 
   display.setCursor(40, 30);
-  display.print(mShow[3][2]);
+  display.print(m[3][2]);
 
   display.setCursor(60, 30);
-  display.print(mShow[3][3]);
+  display.print(m[3][3]);
 
   //-----------------------
 
@@ -330,32 +330,32 @@ void Shift(int par, int num)  // Shift a, b, c and d.
   Sum(par, num, a, b, c, d);
 }
 
-int getPower(int num) {
-  int counter = 0;
+// int getPower(int num) {
+//   int counter = 0;
 
-  while (num > 1) {
-    num = num / 2;
-    counter++;
-  }
+//   while (num > 1) {
+//     num = num / 2;
+//     counter++;
+//   }
 
-  return counter;
-}
+//   return counter;
+// }
 
-void convertToPower() {
+// void convertToPower() {
 
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      mShow[i][j] = getPower(m[i][j]);
-    }
-  }
-}
+//   for (int i = 0; i < 4; ++i) {
+//     for (int j = 0; j < 4; ++j) {
+//       mShow[i][j] = getPower(m[i][j]);
+//     }
+//   }
+// }
 
 bool isLoser() {
 
   // zero exist
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      if (mShow[i][j] == 0) {
+      if (m[i][j] == 0) {
         return false;
       }
     }
@@ -364,7 +364,7 @@ bool isLoser() {
   // can move horizentally
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 3; j++) {
-      if (mShow[i][j] == mShow[i][j + 1]) {
+      if (m[i][j] == m[i][j + 1]) {
         return false;
       }
     }
@@ -373,7 +373,7 @@ bool isLoser() {
   // can move vertically
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 3; j++) {
-      if (mShow[j][i] == mShow[j + 1][i]) {
+      if (m[j][i] == m[j + 1][i]) {
         return false;
       }
     }
@@ -407,22 +407,23 @@ void loop() {
 
   if (isLoser()) {
 
-    delay(500);
     display.clearDisplay();
     display.setCursor(0, 0);
     display.print("You Loosed");
     display.display();
 
-
-  } else {
-    convertToPower();
-    displayTable();
-    play();
-
-
-    if (moved) {
-      addRandomNum();
-      moved = false;
+    while (digitalRead(BUTTON_PIN)) {
     }
+
+  }
+
+  // convertToPower();
+  displayTable();
+  play();
+
+
+  if (moved) {
+    addRandomNum();
+    moved = false;
   }
 }
